@@ -28,7 +28,7 @@ def features(post):
     
 if __name__ == "__main__":
 	# read in the data set
-    csvfile = open('dataset.csv', 'rb')
+    csvfile = open('single_tag_dataset.csv', 'rb')
     reader = csv.reader(csvfile,delimiter=',')
     data = list(reader)
     
