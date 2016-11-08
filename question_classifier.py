@@ -4,6 +4,7 @@ import csv
 import re
 import random
 import math
+import sys
 
 ### Utility Functions ###
 def extract_tags(tags):
@@ -11,6 +12,7 @@ def extract_tags(tags):
     return tags.split('>')[:-1]
 
 def tokenize(text):
+    text.lower()
     text = re.sub(r'<[\w/]*>','',text)
     tokens = text.split()
     return tokens
@@ -22,38 +24,56 @@ def features(post):
             features[token] = 0
         features[token] += 1
     return features
+### Utility Functions ###
     
-csvfile = open('dataset.csv', 'rb')
-reader = csv.reader(csvfile,delimiter=',')
-data = list(reader)
-random.shuffle(data)
-slice = math.trunc(len(data)*(.8)) # 80% train, 20% test
-train_data = data[:slice]
-test_data = data[slice:]
-
-train_set = []
-i = 0
-for datacase in train_data:
-    print i
-    post,tag = datacase
-    post = tokenize(post)
-    train_set.append((features(post),tag))
-    i += 1
+if __name__ == "__main__":
+	# read in the data set
+    csvfile = open('dataset.csv', 'rb')
+    reader = csv.reader(csvfile,delimiter=',')
+    data = list(reader)
     
-test_set = []
-for datacase in test_data:
-    post,tag = datacase
-    post = tokenize(post)
-    test_set.append((features(post),tag))
+    # randomize the data cases
+    random.shuffle(data)
+    
+    # split into training and testing data
+    slice = math.trunc(len(data)*(.8)) # 80% train, 20% test
+    train_data = data[:slice]
+    test_data = data[slice:]
+    
+    # collect features and label from each training case
+    train_set = []
+    i = 0
+    for datacase in train_data:
+        # print i
+        post,tag = datacase
+        post = tokenize(post)
+        train_set.append((features(post),tag))
+        i += 1
 
-# print "Test set sample:\n",test_set[:10]
-nb = nltk.NaiveBayesClassifier.train(train_set)
-# sample_post = tokenize('What is the moment generating function for the binomial distribution?')
-sample_post = 'how do I calculate the area of an equilateral triangle?'
-sample_tokens = tokenize(sample_post)
-test = features(sample_tokens)
-print 'Attempting to Classify:\n',sample_post
-print nb.classify(test)
+    # collect features and label from each test case
+    test_set = []
+    for datacase in test_data:
+        post,tag = datacase
+        post = tokenize(post)
+        test_set.append((features(post),tag))
 
-print '\nModel Accuracy:',
-print nltk.classify.util.accuracy(nb,test_set)
+    # train a simple Naive Bayes model
+    print 'Training Naive Bayes model on',len(train_set),' data samples...'
+    nb = nltk.NaiveBayesClassifier.train(train_set)
+	
+    # extracting sample sentence from command line for classification
+    sample_post = ''
+    for token in sys.argv[1:]:
+        sample_post = sample_post + token + ' '
+    sample_tokens = tokenize(sample_post)
+    test = features(sample_tokens)
+    
+    # attempt to classsify sample sentence
+    print 'Attempting to Classify:\n',sample_post
+    print nb.classify(test)
+
+    # calculate and report model accuracy
+    print '\nModel Accuracy:',
+    print nltk.classify.util.accuracy(nb,test_set)
+	
+    
