@@ -5,6 +5,7 @@ import re
 import random
 import math
 import sys
+import os
 
 ### Utility Functions ###
 def extract_tags(tags):
@@ -12,7 +13,7 @@ def extract_tags(tags):
     return tags.split('>')[:-1]
 
 def tokenize(text):
-    text.lower()
+    text = text.lower()
     text = re.sub(r'<[\w/]*>','',text)
     tokens = text.split()
     return tokens
@@ -28,7 +29,9 @@ def features(post):
     
 if __name__ == "__main__":
 	# read in the data set
-    csvfile = open('single_tag_dataset.csv', 'rb')
+    subdir = 'data/single_tags/'
+    fname = 'dataset.csv'
+    csvfile = open(os.path.join(subdir, fname))
     reader = csv.reader(csvfile,delimiter=',')
     data = list(reader)
     
@@ -58,7 +61,7 @@ if __name__ == "__main__":
         test_set.append((features(post),tag))
 
     # train a simple Naive Bayes model
-    print 'Training Naive Bayes model on',len(train_set),' data samples...'
+    print 'Training Naive Bayes model on',len(train_set),'data samples...'
     nb = nltk.NaiveBayesClassifier.train(train_set)
 	
     # extracting sample sentence from command line for classification
@@ -69,14 +72,17 @@ if __name__ == "__main__":
     test = features(sample_tokens)
     
     # attempt to classsify sample sentence
-    print 'Attempting to Classify:\n',sample_post
+    print '\nAttempting to Classify:\n',sample_post
     dist = nb.prob_classify(test)
     print nb.classify(test)
+    
+    # print confidence distribution over classes
+    print '\nClassifier confidence for above post:'
     for sample in dist.samples():
         print sample,' ',dist.prob(sample)
 
     # calculate and report model accuracy
-    print '\nModel Accuracy:',
+    print '\nModel Accuracy based on',len(test_set),'samples:'
     print nltk.classify.util.accuracy(nb,test_set)
 	
     
