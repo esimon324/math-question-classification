@@ -28,7 +28,7 @@ def features(post):
     
 if __name__ == "__main__":
 	# read in the data set
-    csvfile = open('dataset.csv', 'rb')
+    csvfile = open('single_tag_dataset.csv', 'rb')
     reader = csv.reader(csvfile,delimiter=',')
     data = list(reader)
     
@@ -70,7 +70,10 @@ if __name__ == "__main__":
     
     # attempt to classsify sample sentence
     print 'Attempting to Classify:\n',sample_post
+    dist = nb.prob_classify(test)
     print nb.classify(test)
+    for sample in dist.samples():
+        print sample,' ',dist.prob(sample)
 
     # calculate and report model accuracy
     print '\nModel Accuracy:',
