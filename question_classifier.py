@@ -7,12 +7,18 @@ import sys
 import os
 
 from key_word_frequency_classifier import KeyWordFrequencyClassifier
+from analyze import Analyzer
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
 
 from nltk.classify.scikitlearn import SklearnClassifier
 from nltk import NaiveBayesClassifier
+
+### Global Variables ###
+LABELS = ['calculus','category_theory','combinatorics','geometry','graph_theory','linear_algebra','logic','number_theory','probability']
+### Global Variables ###
+
 ### Utility Functions ###
 def extract_tags(tags):
     tags = tags.replace('<','')
@@ -26,14 +32,59 @@ def tokenize(text):
 
 def features(post):
     features = {}
+    # word count features
     for token in post:
         if token not in features:
             features[token] = 0
         features[token] += 1
     return features
+
+def features2(post):
+    features = {'latex_symbol':0}
+    for token in post:
+        # word count features
+        if token not in features:
+            features[token] = 0
+        # LaTex symbol count features
+        features[token] += 1
+        if '%' in token:
+            features['latex_symbol'] += 1
+    return features
+
+def features3(post):
+    features = {'latex_symbol':0}
+    for token in post:
+        # word count features
+        if token not in features:
+            features[token] = 0
+        features[token] += 1
+        
+        # LaTex symbol count feature
+        if '%' in token:
+            features['latex_symbol'] += 1
+        
+        # keyword count feature
+        for label in LABELS:
+            if token in LABEL_KEYWORDS[label]:
+                key = label+'_keyword_count'
+                if key not in features:
+                    features[key] = 0
+                features[key] += 1
+                
+    return features
 ### Utility Functions ###
     
 if __name__ == "__main__":
+    # calculate top 100 most frequent words per label for use in feature space
+    a = Analyzer()
+    global LABEL_KEYWORDS
+    LABEL_KEYWORDS = {}
+    for label in LABELS:
+        LABEL_KEYWORDS[label] = []
+        top_n = a.most_freq_words_by_label(label,100)
+        for word,freq in top_n:
+            LABEL_KEYWORDS[label].append(word)
+
 	# read in the data set
     subdir = 'data/single_tags/'
     fname = 'dataset.csv'
@@ -57,7 +108,7 @@ if __name__ == "__main__":
         # print i
         post,tag = datacase
         post = tokenize(post)
-        train_set.append((features(post),tag))
+        train_set.append((features3(post),tag))
         kwfc_train_set.append((post,tag))
         i += 1
 
@@ -67,7 +118,7 @@ if __name__ == "__main__":
     for datacase in test_data:
         post,tag = datacase
         post = tokenize(post)
-        test_set.append((features(post),tag))
+        test_set.append((features3(post),tag))
         kwfc_test_set.append((post,tag))
 
     # train a simple Naive Bayes model
@@ -101,9 +152,6 @@ if __name__ == "__main__":
     
     print '\nLogistic Regression ccuracy based on',len(test_set),'samples:'
     print nltk.classify.util.accuracy(lr,test_set)
-    
-    print '\nLinear Support Vector Machine accuracy based on',len(test_set),'samples:'
-    print nltk.classify.util.accuracy(svc,test_set)
     
     print '\nKey Word Frequency Classifier accuracy based on',len(kwfc_test_set),'samples:'
     print kwfc.accuracy(kwfc_test_set)
