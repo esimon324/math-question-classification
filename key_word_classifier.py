@@ -14,12 +14,6 @@ class KeyWordClassifier:
         if stop_words_fname != None:
             self.get_stop_words(stop_words_fname)
     
-    def tokenize(self,text):
-        text = text.lower()
-        text = re.sub(r'<[\w/]*>','',text)
-        tokens = text.split()
-        return tokens
-    
     def get_stop_words(self,stop_words_fname):
         stop_words_file = open(os.path.join('data/',stop_words_fname))
         self.stop_words = [line.rstrip('\n') for line in stop_words_file]
@@ -44,6 +38,7 @@ class KeyWordClassifier:
             for word,freq in top_n:
                 self.label_key_words[label].append(word)
     
+    # predicts label of given sample
     def predict(self,sample):
         label_scores = {}
         for label in self.labels:
