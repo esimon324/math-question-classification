@@ -6,7 +6,7 @@ import math
 import sys
 import os
 
-from key_word_frequency_classifier import KeyWordFrequencyClassifier
+from keyword_frequency_classifier import KeywordFrequencyClassifier
 from analyze import Analyzer
 
 from sklearn.linear_model import LogisticRegression
@@ -108,7 +108,7 @@ if __name__ == "__main__":
         # print i
         post,tag = datacase
         post = tokenize(post)
-        train_set.append((features3(post),tag))
+        train_set.append((features2(post),tag))
         kwfc_train_set.append((post,tag))
         i += 1
 
@@ -118,15 +118,15 @@ if __name__ == "__main__":
     for datacase in test_data:
         post,tag = datacase
         post = tokenize(post)
-        test_set.append((features3(post),tag))
+        test_set.append((features2(post),tag))
         kwfc_test_set.append((post,tag))
 
     # train a simple Naive Bayes model
-    print 'Training Naive Bayes model on',len(train_set),'data samples...'
+    print 'Training models on',len(train_set),'data samples...'
     nb = NaiveBayesClassifier.train(train_set)
     lr = SklearnClassifier(LogisticRegression()).train(train_set)
     svc = SklearnClassifier(LinearSVC()).train(train_set)
-    kwfc = KeyWordFrequencyClassifier('stop_words')
+    kwfc = KeywordFrequencyClassifier('stop_words')
     kwfc.train(kwfc_train_set)
     
     # extracting sample sentence from command line for classification
@@ -147,12 +147,12 @@ if __name__ == "__main__":
         print sample,' ',dist.prob(sample)
 
     # calculate and report model accuracy
+    print '\nKey Word Frequency Classifier accuracy based on',len(kwfc_test_set),'samples:'
+    print kwfc.accuracy(kwfc_test_set)
+    
     print '\nNaive Bayes accuracy based on',len(test_set),'samples:'
     print nltk.classify.util.accuracy(nb,test_set)
     
     print '\nLogistic Regression ccuracy based on',len(test_set),'samples:'
     print nltk.classify.util.accuracy(lr,test_set)
-    
-    print '\nKey Word Frequency Classifier accuracy based on',len(kwfc_test_set),'samples:'
-    print kwfc.accuracy(kwfc_test_set)
     
