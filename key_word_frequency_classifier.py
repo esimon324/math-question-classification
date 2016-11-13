@@ -3,7 +3,7 @@ import os
 import re
 import operator
 
-class KeyWordClassifier:
+class KeyWordFrequencyClassifier:
     label_key_words = {}
     labels = []
     stop_words = []

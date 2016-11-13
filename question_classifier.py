@@ -6,7 +6,7 @@ import math
 import sys
 import os
 
-from key_word_classifier import KeyWordClassifier
+from key_word_frequency_classifier import KeyWordFrequencyClassifier
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
@@ -51,32 +51,32 @@ if __name__ == "__main__":
     
     # collect features and label from each training case
     train_set = []
-    kwc_train_set = []
+    kwfc_train_set = []
     i = 0
     for datacase in train_data:
         # print i
         post,tag = datacase
         post = tokenize(post)
         train_set.append((features(post),tag))
-        kwc_train_set.append((post,tag))
+        kwfc_train_set.append((post,tag))
         i += 1
 
     # collect features and label from each test case
     test_set = []
-    kwc_test_set = []
+    kwfc_test_set = []
     for datacase in test_data:
         post,tag = datacase
         post = tokenize(post)
         test_set.append((features(post),tag))
-        kwc_test_set.append((post,tag))
+        kwfc_test_set.append((post,tag))
 
     # train a simple Naive Bayes model
     print 'Training Naive Bayes model on',len(train_set),'data samples...'
     nb = NaiveBayesClassifier.train(train_set)
     lr = SklearnClassifier(LogisticRegression()).train(train_set)
     svc = SklearnClassifier(LinearSVC()).train(train_set)
-    kwc = KeyWordClassifier('stop_words')
-    kwc.train(kwc_train_set)
+    kwfc = KeyWordFrequencyClassifier('stop_words')
+    kwfc.train(kwfc_train_set)
     
     # extracting sample sentence from command line for classification
     sample_post = ''
@@ -96,15 +96,15 @@ if __name__ == "__main__":
         print sample,' ',dist.prob(sample)
 
     # calculate and report model accuracy
-    print '\nNaive Bayes Accuracy based on',len(test_set),'samples:'
+    print '\nNaive Bayes accuracy based on',len(test_set),'samples:'
     print nltk.classify.util.accuracy(nb,test_set)
     
-    print '\nLogistic Regression Accuracy based on',len(test_set),'samples:'
+    print '\nLogistic Regression ccuracy based on',len(test_set),'samples:'
     print nltk.classify.util.accuracy(lr,test_set)
     
-    print '\nLinear Support Vector Machine Accuracy based on',len(test_set),'samples:'
+    print '\nLinear Support Vector Machine accuracy based on',len(test_set),'samples:'
     print nltk.classify.util.accuracy(svc,test_set)
     
-    print '\nKey Word Classifier Accuracy based on',len(kwc_test_set),'samples:'
-    print kwc.accuracy(kwc_test_set)
+    print '\nKey Word Frequency Classifier accuracy based on',len(kwfc_test_set),'samples:'
+    print kwfc.accuracy(kwfc_test_set)
     
