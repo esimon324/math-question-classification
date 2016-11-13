@@ -26,17 +26,16 @@ def word_freq_by_class(n,data,stopwords=True):
     
 def main():    
     # read in the stopwords file
-    stop_words_file = open(sys.argv[2])
+    stop_words_file = open(os.path.join('data/','stop_words'))
     global STOP_WORDS
     STOP_WORDS = [line.rstrip('\n') for line in stop_words_file] #striping each \n from stop words
     
     # cmd line specified number of top words
-    n = int(sys.argv[3])
+    n = int(sys.argv[2])
     
     # read in the data set csv denoted in the command line
     data_fname = sys.argv[1]
-    subdir = 'data/single_tags/'
-    csvfile = open(os.path.join(subdir, data_fname))
+    csvfile = open(os.path.join('data/single_tags/', data_fname))
     reader = csv.reader(csvfile,delimiter=',')
     data = list(reader)
     

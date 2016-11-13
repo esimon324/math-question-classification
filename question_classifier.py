@@ -1,5 +1,4 @@
 import nltk
-import sklearn
 import csv
 import re
 import random
@@ -7,6 +6,11 @@ import math
 import sys
 import os
 
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
+
+from nltk.classify.scikitlearn import SklearnClassifier
+from nltk import NaiveBayesClassifier
 ### Utility Functions ###
 def extract_tags(tags):
     tags = tags.replace('<','')
@@ -62,8 +66,10 @@ if __name__ == "__main__":
 
     # train a simple Naive Bayes model
     print 'Training Naive Bayes model on',len(train_set),'data samples...'
-    nb = nltk.NaiveBayesClassifier.train(train_set)
-	
+    nb = NaiveBayesClassifier.train(train_set)
+    lr = SklearnClassifier(LogisticRegression()).train(train_set)
+    svc = SklearnClassifier(LinearSVC()).train(train_set)
+    
     # extracting sample sentence from command line for classification
     sample_post = ''
     for token in sys.argv[1:]:
@@ -82,7 +88,12 @@ if __name__ == "__main__":
         print sample,' ',dist.prob(sample)
 
     # calculate and report model accuracy
-    print '\nModel Accuracy based on',len(test_set),'samples:'
+    print '\nNaive Bayes Accuracy based on',len(test_set),'samples:'
     print nltk.classify.util.accuracy(nb,test_set)
-	
+    
+    print '\nLogistic Regression Accuracy based on',len(test_set),'samples:'
+    print nltk.classify.util.accuracy(lr,test_set)
+    
+    print '\nLinear Support Vector Machine Accuracy based on',len(test_set),'samples:'
+    print nltk.classify.util.accuracy(svc,test_set)
     
