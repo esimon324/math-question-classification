@@ -7,29 +7,38 @@ class Analyzer:
     label_key_words = {}
     stop_words = []
     data = []
+    label_set = []
     
-    def __init__(self):
+    def __init__(self,data=None):
         # read in the stopwords file
         stop_words_file = open(os.path.join('data/','stop_words'))
         self.stop_words = [line.rstrip('\n') for line in stop_words_file] #striping each \n from stop words
+            
+        if data == None:
+            # read in the data set
+            csvfile = open(os.path.join('data/original_tags/','dataset.csv'))
+            reader = csv.reader(csvfile,delimiter=',')
+            self.data = list(reader)
+        else:
+            self.data = data
         
-        # read in the data set
-        csvfile = open(os.path.join('data/single_tags/','dataset.csv'))
-        reader = csv.reader(csvfile,delimiter=',')
-        self.data = list(reader)
-    
+        self.label_set = self.get_label_set()
+        
     def tokenize(self,text):
         text = text.lower()
         text = re.sub(r'<[\w/]*>','',text)
         tokens = text.split()
         return tokens
+    
+    def extract_labels(self,labels):
+        return re.sub(r'<|>',' ',labels).split()
         
     # returns n most frequent words for given label from dataset as a list of tuples
     def most_freq_words_by_label(self,label,n,stopwords=True):
         freq = {}
         # for each post
         for post,tag in self.data:
-            if tag == label:
+            if label in tag:
                 # for each token in post as a tokenized list
                 for token in self.tokenize(post):
                     # apply stop word filtering
@@ -65,39 +74,60 @@ class Analyzer:
         
         # return first n items as n most frequent
         return freq_n_list[:n]
+    
+    def get_label_set(self):
+        set = []
+        for post,tags in self.data:
+            for tag in self.extract_labels(tags):
+                if tag not in set and tag != '':
+                    set.append(tag)
+        return set
+    
+    # returns a dict of tags to top n most frequency words
+    def all_label_keywords(self,n):
+        label2keywords = {}
+        for label in self.label_set:
+            label2keywords[label] = []
+            top_n = self.most_freq_words_by_label(label,n)
+            for word,freq in top_n:
+                label2keywords[label].append(word)
+            
+        return label2keywords
         
 def main():      
-    # cmd line specified data file
-    data_fname = sys.argv[1]
+    # # cmd line specified data file
+    # data_fname = sys.argv[1]
 
-    # cmd line specified number of top words
-    n = int(sys.argv[2])
+    # # cmd line specified number of top words
+    # n = int(sys.argv[2])
 
-    # cmd line speficied label
-    label = sys.argv[3]  
+    # # cmd line speficied label
+    # label = sys.argv[3]  
     
-    # cmd line specified desire to write results to file
-    write_to_file = sys.argv[4]
+    # # cmd line specified desire to write results to file
+    # write_to_file = sys.argv[4]
     
         
-    # creating analyzer object
+    # # creating analyzer object
+    # a = Analyzer()
+    
+    # # if label provided, calculate n most frequent words per label
+    # top_n = []
+    # if label != "all":
+        # top_n = a.most_freq_words_by_label(label,n)
+    # else:
+        # top_n = a.most_freq_words(n)
+    
+    # # write results to file
+    # if write_to_file:
+        # fname = (data_fname.split('.'))[0]+'_frequencies_top_'+str(n)
+        # outfile = open(fname,'w')
+        # for word,freq in top_n:
+            # outfile.write(word+'  '+str(freq)+'\n')
+    
     a = Analyzer()
     
-    # if label provided, calculate n most frequent words per label
-    top_n = []
-    if label != "all":
-        top_n = a.most_freq_words_by_label(label,n)
-    else:
-        top_n = a.most_freq_words(n)
-    
-    # write results to file
-    if write_to_file:
-        fname = (data_fname.split('.'))[0]+'_frequencies_top_'+str(n)
-        outfile = open(fname,'w')
-        for word,freq in top_n:
-            outfile.write(word+'  '+str(freq)+'\n')
-    
-    print top_n
+    # print top_n
     
 if __name__ == "__main__":
     main()
