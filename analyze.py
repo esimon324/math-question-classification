@@ -23,6 +23,16 @@ class Analyzer:
             self.data = data
         
         self.label_set = self.get_label_set()
+    
+    def features_wc(self,text):
+        text = self.tokenize(text)
+        features = {}
+        # word count features
+        for token in text:
+            if token not in features:
+                features[token] = 0
+            features[token] += 1
+        return features  
         
     def tokenize(self,text):
         text = text.lower()

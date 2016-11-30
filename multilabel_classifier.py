@@ -1,11 +1,16 @@
+# TO DO: IMPLEMENT ONE VS REST CLASSIFICATION
+
 import os
 import sys
 import csv
+import re
 import pickle
 
 from analyze import Analyzer
 from sklearn.linear_model import LogisticRegression
 from sklearn.multiclass import OneVsRestClassifier
+from sklearn.feature_extraction import DictVectorizer
+from sklearn.preprocessing import MultiLabelBinarizer
 
 from nltk.classify.scikitlearn import SklearnClassifier
 
@@ -16,7 +21,8 @@ def tokenize(text):
     tokens = text.split()
     return tokens
     
-def features(post,key_words):
+def features(post):
+    # v = DictVectorizer(sparse=False)
     features = {'latex_symbol':0}
     for token in post:
         # word count features
@@ -27,15 +33,8 @@ def features(post,key_words):
         # LaTex symbol count feature
         if '%' in token:
             features['latex_symbol'] += 1
-        
-        # keyword count feature
-        for label in key_words:
-            if token in key_words[label]:
-                key = label+'_keyword_count'
-                if key not in features:
-                    features[key] = 0
-                features[key] += 1
                 
+    # return v.fit_transform(features)[0]
     return features
     
 # returns a binary list representing the label set 
@@ -73,25 +72,40 @@ if __name__ == "__main__":
         with open('dataset.pickle', 'wb') as handle:
             pickle.dump(data, handle)
     else:
-        print 'Reading in the data...'
-        data = None
-        with open('dataset.pickle', 'rb') as handle:
-            data = pickle.load(handle)
+        # print 'Reading in the data...'
+        # data = None
+        # with open('dataset.pickle', 'rb') as handle:
+            # data = pickle.load(handle)
+        # read in the data set
+        subdir = 'data/original_tags/'
+        fname = 'dataset.csv'
+        csvfile = open(os.path.join(subdir, fname))
+        reader = csv.reader(csvfile,delimiter=',')
+        data = list(reader)
+        
+        a = Analyzer(data)
+        mlb = MultiLabelBinarizer()
+        dc = DictVectorizer(sparse=False)
         
         X = []
         Y = []
-        for case,target in data:
-            X.append(case)
-            Y.append(target)
+        for x,y in data:
+            X.append(features(tokenize(x)))
+            Y.append(a.extract_labels(y))
+        
+        X = dc.fit_transform(X)
+        print 'Shape of X:',X.shape
+        Y = mlb.fit_transform(Y)
         
         print 'Training OneVsRestClassifier...'
         ovr = OneVsRestClassifier(LogisticRegression())
-        ovr.fit(X,Y)
+        ovr.fit(X[:1000],Y[:1000])
         
         test_str = 'What is the probability of rolling a die and getting a 3?'
         
         print 'Predicting on:',test_str
-        print ovr.predict(test_set)
+        # print 'Predict:',ovr.predict(X[50])
+        # print dc.get_feature_names()
     # # randomize the data cases
     # random.shuffle(data)
     
