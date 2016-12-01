@@ -103,6 +103,13 @@ class Analyzer:
                 label2keywords[label].append(word)
             
         return label2keywords
+    
+    # returns the average size of the tagset for each sample in the data
+    def mean_tag_set_size(self):
+        sum = 0
+        for post,tags in self.data:
+            sum += len(self.extract_labels(tags))
+        return sum / len(self.data)
         
 def main():      
     # # cmd line specified data file
