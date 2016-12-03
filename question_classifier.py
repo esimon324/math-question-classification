@@ -121,7 +121,7 @@ if __name__ == "__main__":
         test_set.append((features2(post),tag))
         kwfc_test_set.append((post,tag))
 
-    # train a simple Naive Bayes model
+    # train a simple classification models
     print 'Training models on',len(train_set),'data samples...'
     nb = NaiveBayesClassifier.train(train_set)
     lr = SklearnClassifier(LogisticRegression()).train(train_set)
@@ -153,6 +153,6 @@ if __name__ == "__main__":
     print '\nNaive Bayes accuracy based on',len(test_set),'samples:'
     print nltk.classify.util.accuracy(nb,test_set)
     
-    print '\nLogistic Regression ccuracy based on',len(test_set),'samples:'
+    print '\nLogistic Regression accuracy based on',len(test_set),'samples:'
     print nltk.classify.util.accuracy(lr,test_set)
     
