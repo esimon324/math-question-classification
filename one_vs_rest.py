@@ -17,14 +17,14 @@ from nltk.classify.util import accuracy
 class OneVsRestClassifier:
     classifiers = {}
     label_set = []
+    removed_labels = []
     
     def __init__(self):
         pass
     
-    def fit(self,train_set,one2one=True,threshold=200):
-        a = Analyzer(train_set)
-        num_removed = 0
-        self.label_set = a.get_label_set()
+    # trains the one vs rest model on the given training set
+    def fit(self,train_set,one2one=True,threshold=200,print_stats=False):
+        self.label_set = self.get_label_set(train_set)
         if one2one:
             for label in self.label_set:
                 cur_train = []
@@ -34,7 +34,7 @@ class OneVsRestClassifier:
                 num_pos = len(cur_train)
                 if num_pos < threshold:
                     self.classifiers[label] = None
-                    num_removed += 1
+                    self.removed_labels.append(label)
                 else:
                     num_neg = 0
                     for x,y in train_set:
@@ -43,7 +43,6 @@ class OneVsRestClassifier:
                             num_neg += 1
                     random.shuffle(cur_train)
                     self.classifiers[label] = SklearnClassifier(LogisticRegression()).train(cur_train)
-            print num_removed
         else:
             for label in self.label_set:
                 cur_train = []
@@ -56,13 +55,20 @@ class OneVsRestClassifier:
                         cur_train.append((x,0))
                 print label,num
                 self.classifiers[label] = SklearnClassifier(LogisticRegression()).train(cur_train)
-        
+        if(print_stats):
+            print 'Minimum number of label occurrences required for consideration:',threshold
+            print 'Total number of labels in training set:',len(self.label_set)
+            print 'Number of Labels Considered:',len(self.label_set) - len(self.removed_labels)
+            print 'Number of Labels Disregarded:',len(self.removed_labels)
+
+    # given a question sample, predicts the tagset returned as a dict
     def predict_dict(self,sample):
         pred = {}
         for label in self.label_set:
             pred[label] = self.classifiers[label].classify(sample)
         return pred
     
+    # given a question sample, predicts the tagset returned as a binary list
     def predict(self,sample):
         pred = []
         for label in self.label_set:
@@ -81,75 +87,51 @@ class OneVsRestClassifier:
                     bin_list[i] = 1
         return bin_list
     
+    # converts a binary list into a set of labels
     def inverse_transform(self,bin_list):
         tag_list = []
         for i in range(len(bin_list)):
             if bin_list[i] == 1:
                 tag_list.append(self.label_set[i])
         return tag_list
-    
-    def mean_hamming_error(self,test_set):
+        
+    def get_label_set(self,train_set):
+        label_set = []
+        for feat,tags in train_set:
+            for tag in tags:
+                if tag not in label_set:
+                    label_set.append(tag)
+        return label_set
+        
+    def total_hamming_error(self,test_set):
         sum_error = 0
         for x,y in test_set:
             gold = self.transform(y)
             pred = self.predict(x)
-            # print self.inverse_transform(pred)
             sum_error += util.hamming_error(gold,pred)
-        return sum_error / len(test_set)    
+        return sum_error
+    
+    def mean_hamming_error(self,test_set):
+        return self.total_hamming_error(test_set) / len(test_set)
         
-if __name__ == "__main__":
-    # instantiating classifier and Analyzer
-    ovr = OneVsRestClassifier()
-    a = Analyzer()
+    def total_recall_error(self,test_set):
+        sum_error = 0
+        for x,y in test_set:
+            gold = self.transform(y)
+            pred = self.predict(x)
+            sum_error += util.recall_error(gold,pred)
+        return sum_error
     
-    # read in the data set
-    subdir = 'data/original_tags/'
-    fname = 'dataset.csv'
-    csvfile = open(os.path.join(subdir, fname))
-    reader = csv.reader(csvfile,delimiter=',')
-    data = list(reader)
-    print len(Analyzer(data).get_label_set())
-    
-    # randomize the data cases
-    random.shuffle(data)
-    
-    # split into training and testing data
-    slice = math.trunc(len(data)*(.8)) # 80% train, 20% test
-    train_data = data[:slice]
-    test_data = data[slice:]
-    
-    # collect features and label from each training case
-    train_set = []
-    for post,tag in train_data:
-        post = a.features_wc(post)
-        train_set.append((post,tag))
+    def mean_recall_error(self,test_set):
+        return self.total_recall_error / len(test_set)
         
-    # collect features and label from each test case
-    test_set = []
-    for post,tag in test_data:
-        post = a.features_wc(post)
-        test_set.append((post,tag))
+    def total_precision_error(self,test_set):
+        sum_error = 0
+        for x,y in test_set:
+            gold = self.transform(y)
+            pred = self.predict(x)
+            sum_error += util.precision_error(gold,pred)
+        return sum_error
     
-    ovr.fit(train_set)
-    
-    sample_str = 'What how many distinct even numbers sum to primes?'
-    sample = a.features_wc(sample_str)
-    
-    print 'Predicting:',sample_str
-    print ovr.inverse_transform(ovr.predict(sample))
-    print 'Error',ovr.mean_hamming_error(test_set)
-    # print 'Average tag length:',a.mean_tag_set_size()
-    # classif = OneVsRestClassifier()
-    # expr = []
-    # for i in range(20,41):
-        # n = i*10
-        # classif.fit(train_set,threshold=n)
-        # error = classif.mean_hamming_error(test_set)
-        # print n,error
-        # expr.append(error)
-    # for error in expr:
-        # print error
-    # print ovr.accuracy(test_set)
-    # print ovr.classifiers['probability'].classify(sample)
-    # lr = SklearnClassifier(LogisticRegression()).train(train_set)
-    # print lr.classify(sample)
+    def mean_precision_error(self,test_set):
+        return self.total_precision_error / len(test_set)
