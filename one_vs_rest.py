@@ -14,6 +14,7 @@ from sklearn.linear_model import LogisticRegression
 from nltk.classify.scikitlearn import SklearnClassifier
 from nltk.classify.util import accuracy
 
+# multi-label classifier that manifests as a collection binary classifier for each label
 class OneVsRestClassifier:
     classifiers = {}
     label_set = []

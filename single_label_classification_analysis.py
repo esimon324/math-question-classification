@@ -12,7 +12,8 @@ from keyword_frequency_classifier import KeywordFrequencyClassifier
 from sklearn.linear_model import LogisticRegression
 from nltk.classify.scikitlearn import SklearnClassifier
 from nltk import NaiveBayesClassifier
-    
+
+# analysis of the single label classification models   
 if __name__ == "__main__":
 	# read in the data set
     subdir = 'data/single_tags/'
@@ -51,7 +52,7 @@ if __name__ == "__main__":
     test = util.features(sample_post)
     
     # attempt to classsify sample sentence
-    print '\nAttempting to Classify:\n',sample_post
+    print '\nAn Example:\n',sample_post
     dist = nb.prob_classify(test)
     print 'Naive Bayes:',nb.classify(test)
     print 'Keyword Classifier',kwfc.predict(test)

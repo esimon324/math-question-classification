@@ -7,31 +7,35 @@ import math
 from analyze import Analyzer
 from one_vs_rest import OneVsRestClassifier
 
-if __name__ == "__main__":    
+# analysis of multi-label dataset and OVR classifier
+def main():  
     # read in the data set
     subdir = 'data/original_tags/'
     fname = 'dataset.csv'
     data = util.parse_data(subdir,fname,extract_features=True)
     
+    # randomize the data cases
+    random.shuffle(data)
+    
+    # split into training and testing data
+    slice = math.trunc(len(data)*(.8)) # 80% train, 20% test
+    train_data = data[:slice]
+    test_data = data[slice:]
+    
     # instantiating classifier
     ovr = OneVsRestClassifier()
     a = Analyzer(subdir,fname)
     
-    # split into training and testing data
-    slice = math.trunc(len(data)*(.6)) # 80% train, 20% test
-    train_data = data[:slice]
-    test_data = data[slice:]
-    
     print 'Dataset Statistics\n---'
     print 'Total Tokens:',a.total_tokens()
-    #print 'Total Types:',a.total_types()
+    print 'Total Types:',a.total_types()
     print 'Total Label Types:',a.total_label_types()
     print 'Average number of tags per sample:',a.mean_tag_set_size()
     
     print 
     
     print 'Training Statistics\n---'
-    ovr.fit(train_data,threshold=50,print_stats=True)
+    ovr.fit(train_data,threshold=200,print_stats=True)
    
     print
     
@@ -62,4 +66,6 @@ if __name__ == "__main__":
     print 'Hamming Error:',util.hamming_error(gold_y,pred_y)
     print 'Recall Error:',util.recall_error(gold_y,pred_y)
     print 'Precision Error:',util.precision_error(gold_y,pred_y)
-    
+
+if __name__ == "__main__": 
+    main()

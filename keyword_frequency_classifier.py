@@ -3,6 +3,7 @@ import os
 import re
 import operator
 
+# classifier using prevalance of keywords per topic found within document
 class KeywordFrequencyClassifier:
     label_key_words = {}
     labels = []

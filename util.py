@@ -5,6 +5,7 @@ import os
 import re
 import random
 
+# extracts features from a given body of text
 def features(text,latex=True):
     features = {}
     if latex:
@@ -21,13 +22,15 @@ def features(text,latex=True):
                 features['latex_symbol'] += 1
 
     return features  
-    
+
+# converts a string to a list of lowercased tokens
 def tokenize(text):
     text = text.lower()
     text = re.sub(r'<[\w/]*>','',text)
     tokens = text.split()
     return tokens
-    
+
+# converts label tag strings into a list of labels
 def extract_labels(labels):
     return re.sub(r'<|>',' ',labels).split()
 
@@ -70,7 +73,8 @@ def recall_error(gold,pred):
         if gold[i] == 1 and pred[i] == 0:
             count += 1
     return count
-    
+
+# number of tags wrongly predicted by OVR classifier given gold standard and prediction
 def precision_error(gold,pred):
     count = 0
     for i in range(len(gold)):

@@ -5,6 +5,7 @@ import os
 import re
 import util
 
+# object for determining important statistics on given dataset
 class Analyzer:
     stop_words = []
     data = []
