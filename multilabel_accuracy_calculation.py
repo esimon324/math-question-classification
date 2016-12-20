@@ -14,8 +14,10 @@ def main():
     fname = 'dataset.csv'
     data = util.parse_data(subdir,fname,extract_features=True)
     
+    # grab number of trials form the cmd line input
     num_trials = int(sys.argv[1])
     
+    # set up dictionary to hold results
     trial_results = {}
     trial_results['sum_total_hamming'] = 0
     trial_results['sum_total_precision'] = 0

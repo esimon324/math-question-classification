@@ -26,34 +26,34 @@ def main():
     ovr = OneVsRestClassifier()
     a = Analyzer(subdir,fname)
     
+    # printing dataset statistics
     print 'Dataset Statistics\n---'
     print 'Total Tokens:',a.total_tokens()
     print 'Total Types:',a.total_types()
     print 'Total Label Types:',a.total_label_types()
     print 'Average number of tags per sample:',a.mean_tag_set_size()
-    
     print 
     
+    # printing OVR training specific statistics
     print 'Training Statistics\n---'
-    ovr.fit(train_data,threshold=200,print_stats=True)
-   
-    print
+    ovr.fit(train_data,threshold=200,print_stats=True)   
     
     total_hamming_error = ovr.total_hamming_error(test_data)
     total_recall_error = ovr.total_recall_error(test_data)
     total_precision_error =ovr.total_precision_error(test_data)
     test_size = len(test_data)
     
+    print
     print 'Model Accuracy\n---'
     print 'Total Hamming Error:',total_hamming_error
     print 'Mean Hamming Error:',total_hamming_error / test_size
     print 'Total Recall Error:',total_recall_error
     print 'Mean Recall Error:',total_recall_error / test_size
     print 'Total Precision Error:',total_precision_error
-    print 'Mean Precision Error:',total_precision_error / test_size
-    
+    print 'Mean Precision Error:',total_precision_error / test_size   
     print
     
+    # An example
     sample_str = 'How many numbers less than 70 are relatively prime to it?'
     sample = util.features(sample_str)
     gold_y = ovr.transform(['combinatorics','number-theory'])

@@ -15,7 +15,7 @@ from nltk import NaiveBayesClassifier
 
 # analysis of the single label classification models   
 if __name__ == "__main__":
-	# read in the data set
+    # read in the data set
     subdir = 'data/single_tags/'
     fname = 'dataset.csv'
     data = util.parse_data(subdir,fname,single_label=True,extract_features=True)
@@ -45,15 +45,12 @@ if __name__ == "__main__":
     print '\nLogistic Regression accuracy based on',len(test_set),'samples:'
     print nltk.classify.util.accuracy(lr,test_set)
     
-    # extracting sample sentence from command line for classification
+    # an example
     sample_post = 'How many numbers less than 70 are relatively prime to it?'
-    for token in sys.argv[1:]:
-        sample_post = sample_post + token + ' '
     test = util.features(sample_post)
     
     # attempt to classsify sample sentence
     print '\nAn Example:\n',sample_post
-    dist = nb.prob_classify(test)
     print 'Naive Bayes:',nb.classify(test)
     print 'Keyword Classifier',kwfc.predict(test)
     print 'Logistic Regression:',lr.classify(test)
